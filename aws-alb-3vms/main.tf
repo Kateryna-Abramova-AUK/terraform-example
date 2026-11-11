@@ -40,6 +40,12 @@ locals {
   # sort() makes the order stable between runs, so VM 0 always lands in
   # the same subnet and Terraform does not try to move it around.
   subnet_ids = sort(data.aws_subnets.default.ids)
+
+  vm_subnet_ids = [
+    "subnet-0ed32028b15494ea1", # us-east-1a
+    "subnet-0d2bff8882c171bd5", # us-east-1d
+    "subnet-0e70aaafe6a145e3b"  # us-east-1f
+  ]
 }
 
 # ---------------------------------------------------------------------------
@@ -120,7 +126,7 @@ resource "aws_instance" "vm" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   # Round-robin the VMs over the available subnets/AZs: 0, 1, 2, 0, 1, ...
-  subnet_id                   = local.subnet_ids[count.index % length(local.subnet_ids)]
+  subnet_id                   = local.vm_subnet_ids[count.index]
   vpc_security_group_ids      = [aws_security_group.vm.id]
   key_name                    = aws_key_pair.this.key_name
   associate_public_ip_address = true
